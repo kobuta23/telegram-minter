@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract GroupChatNFT is ERC1155, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
     uint256 private _currentTokenId;
     
     // Mapping from token ID to token URI
@@ -14,6 +15,7 @@ contract GroupChatNFT is ERC1155, AccessControl {
 
     constructor(address initialOwner) ERC1155("") {
         _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
+        _grantRole(MINTER_ROLE, initialOwner);
         _currentTokenId = 0;
     }
 

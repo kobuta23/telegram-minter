@@ -1,0 +1,3 @@
+[etherscan]
+base = { key = "${BASESCAN_KEY}" }
+base_sepolia = { key = "${BASESCAN_KEY}" }

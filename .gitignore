@@ -1,3 +1,17 @@
 node_modules
 lib
 dist
+userTokens.json
+logs.json
+.env
+out
+cache
+broadcast
+coverage
+coverage.json
+lcov.info
+typechain-types
+.DS_Store
+*.log
+.env.*
+!.env.example
