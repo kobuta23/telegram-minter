@@ -4,14 +4,20 @@ import path from 'path';
 interface AuditLog {
     timestamp: string;
     chatMsg: string;
-    action: 'create' | 'mint' | 'admin';
+    action: 'create' | 'mint' | 'admin' | 'points';
     userId: number;
     username?: string;
     chatId: number;
     chatTitle?: string;
     admin?: AdminActionMetadata;
     token?: TokenActionMetadata; 
+    points?: PointsActionMetadata;
 }    
+
+interface PointsActionMetadata {
+    tokenId: number;
+    points: number;
+}
 
 interface TokenActionMetadata {
     transactionHash?: string;
@@ -77,7 +83,7 @@ export class AuditLogger {
     static async log(data: Omit<AuditLog, 'timestamp'>) {
         const logEntry: AuditLog = {
             timestamp: new Date().toISOString(),
-            action: data.action as 'create' | 'mint' | 'admin',
+            action: data.action as 'create' | 'mint' | 'admin' | 'points',
             userId: data.userId,
             username: data.username,
             chatId: data.chatId,
