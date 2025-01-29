@@ -14,4 +14,4 @@ typechain-types
 .DS_Store
 *.log
 .env.*
-!.env.example
+!.env.example.env
