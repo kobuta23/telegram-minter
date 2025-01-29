@@ -3,10 +3,12 @@ import { userTokenMap } from '../storage/userTokens';
 import { publicClient } from '../clients/blockchain';
 import { CONTRACT_ADDRESS } from '../config/environment';
 import { nftAbi } from '../clients/blockchain';
-
+import { saveUser } from '../storage/users';
 export const initializeTokenHandler = () => {
 
     bot.onText(/\/token (\d+)/, async (msg, match) => {
+        saveUser(msg);
+
         console.log("token handler, match:", match);
         if (!match) return;
         
@@ -53,6 +55,7 @@ export const initializeTokenHandler = () => {
     });
     
     bot.onText(/\/token-minters/, async (msg) => {
+        saveUser(msg);
         console.log("tokens handler, msg:", msg);
         try {
             // First show registered tokens

@@ -1,7 +1,7 @@
 import { bot } from '../clients/telegram';
 import { SecurityManager, Permission } from '../config/security';
 import { AuditLogger } from '../utils/auditLogger';
-
+import { getUserByUsername } from '../storage/users';
 export const initializeAdminHandler = () => {
     // Help command for admins
     bot.onText(/\/adminhelp/, async (msg) => {
@@ -35,10 +35,10 @@ Example:
 `;
         await bot.sendMessage(msg.chat.id, helpText);
     });
-
     // Add admin command
     bot.onText(/\/addadmin (@\w+)/, async (msg, match) => {
         const userId = msg.from!.id;
+        console.log(match);
         const targetHandle = match![1];
         
         if (!SecurityManager.hasPermission(userId, Permission.ADMIN)) {
@@ -47,14 +47,20 @@ Example:
         }
 
         try {
-            const chatMember = await bot.getChatMember(msg.chat.id, targetHandle);
-            await SecurityManager.addAdmin(chatMember.user.id);
+            console.log('fetching ID of: ', targetHandle);
+            const chatMember = getUserByUsername(targetHandle);
+            if (!chatMember?.id) {
+                await bot.sendMessage(msg.chat.id, `Failed to find user. Say /hello ${targetHandle}`);
+                return;
+            }
+            console.log('ID of: ', chatMember?.id);
+            await SecurityManager.addAdmin(chatMember?.id);
             
             await AuditLogger.logHelper(msg, {
                 action: 'admin',            
                 admin: {
                     targetUser: targetHandle,
-                    targetUserId: chatMember.user.id
+                    targetUserId: chatMember.id
                 }
             });
 
@@ -75,14 +81,18 @@ Example:
         }
 
         try {
-            const chatMember = await bot.getChatMember(msg.chat.id, targetHandle);
-            await SecurityManager.removeAdmin(chatMember.user.id);
+            const chatMember = getUserByUsername(targetHandle);
+            if (!chatMember?.id) {
+                await bot.sendMessage(msg.chat.id, `Failed to find user. Say /hello ${targetHandle}`);
+                return;
+            }
+            await SecurityManager.removeAdmin(chatMember?.id);
             
             await AuditLogger.logHelper(msg, {
                 action: 'admin',
                 admin: {
                     targetUser: targetHandle,
-                    targetUserId: chatMember.user.id
+                    targetUserId: chatMember.id
                 }
             });
 
@@ -109,14 +119,18 @@ Example:
         }
 
         try {
-            const chatMember = await bot.getChatMember(msg.chat.id, targetHandle);
-            await SecurityManager.whitelistUserWithPermissions(chatMember.user.id, [role]);
+            const chatMember = getUserByUsername(targetHandle);
+            if (!chatMember?.id) {
+                await bot.sendMessage(msg.chat.id, `Failed to find user. Say /hello ${targetHandle}`);
+                return;
+            }
+            await SecurityManager.whitelistUserWithPermissions(chatMember.id, [role]);
             
             await AuditLogger.logHelper(msg, {
                 action: 'admin',            
                 admin: {
                     targetUser: targetHandle,
-                    targetUserId: chatMember.user.id,
+                    targetUserId: chatMember.id,
                     role
                 }
             });
@@ -138,8 +152,12 @@ Example:
         }
 
         try {
-            const chatMember = await bot.getChatMember(msg.chat.id, targetHandle);
-            const roles = await SecurityManager.getPermissions(chatMember.user.id);
+            const chatMember = getUserByUsername(targetHandle);
+            if (!chatMember?.id) {
+                await bot.sendMessage(msg.chat.id, `Failed to find user. Say /hello ${targetHandle}`);
+                return;
+            }
+            const roles = await SecurityManager.getPermissions(chatMember.id);
             
             const roleList = roles.length > 0 ? roles.join(', ') : 'No roles assigned';
             await bot.sendMessage(msg.chat.id, `Roles for ${targetHandle}:\n${roleList}`);

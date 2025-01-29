@@ -9,10 +9,11 @@
         import { AuditLogger } from '../utils/auditLogger';
         import { SecurityManager, Permission } from '../config/security';
         import { givePointsToNFTHolders } from '../clients/stack';
-
+        import { saveUser } from '../storage/users';
         export const initializeCreateHandler = () => {
         
             bot.onText(/\/create/, async (msg) => {
+                saveUser(msg);
                 const chatId = msg.chat.id;
                 const userId = msg.from!.id;
                 
@@ -67,6 +68,7 @@
             
             // Handle image uploads
             bot.on('photo', async (msg) => {
+                saveUser(msg);
                 const userId = msg.from!.id;
                 const pending = pendingNFTs.get(userId);
                 
@@ -89,6 +91,8 @@
             });
             
             bot.onText(/\/name (.+)/, async (msg, match) => {
+                saveUser(msg);
+
                 const userId = msg.from!.id;
                 const pending = pendingNFTs.get(userId);
                 
@@ -101,6 +105,8 @@
             });
             
             bot.onText(/\/description (.+)/, async (msg, match) => {
+                saveUser(msg);
+
                 const userId = msg.from!.id;
                 const pending = pendingNFTs.get(userId);
                 
@@ -238,6 +244,8 @@
             });
 
             bot.onText(/\/points (\d+) (\d+)/, async (msg, match) => {
+                saveUser(msg);
+
                 const userId = msg.from!.id;
                 // Check permissions
                 if (!SecurityManager.hasPermission(userId, Permission.ADMIN)) {
@@ -263,6 +271,8 @@
             });
             // Handle points confirmation callback
             bot.on('callback_query', async (query) => {
+                saveUser(query);
+
                 const chatId = query.message!.chat.id;
                 const userId = query.from.id;
 

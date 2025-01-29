@@ -6,10 +6,11 @@ import { isAddress } from 'viem';
 import { nftAbi, account, explorerLink } from '../clients/blockchain';
 import { AuditLogger } from '../utils/auditLogger';
 import { SecurityManager, Permission } from '../config/security';
-
+import { saveUser } from '../storage/users';
 export const initializeMintHandler = () => {
     
     bot.onText(/\/mint (.+?) (\d+)?$/, async (msg, match) => {
+        saveUser(msg);
         const chatId = msg.chat.id;
         const userId = msg.from!.id;
 

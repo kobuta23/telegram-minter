@@ -1,9 +1,10 @@
 import { bot } from '../clients/telegram';
 import { SecurityManager, Permission } from '../config/security';
 import { publicClient, CONTRACT_ADDRESS, nftAbi } from '../clients/blockchain';
-
+import { saveUser } from '../storage/users';
 export const initializeTokensHandler = () => {
     bot.onText(/\/tokens/, async (msg) => {
+        saveUser(msg);
         const chatId = msg.chat.id;
         const userId = msg.from!.id;
 
