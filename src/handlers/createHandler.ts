@@ -58,12 +58,6 @@
                 } else if (query.data === 'keep_existing') {
                     bot.sendMessage(chatId, 'Keeping your existing NFT.');
                 }
-                
-                // Remove the inline keyboard
-                bot.editMessageReplyMarkup(
-                    { inline_keyboard: [] }, 
-                    { chat_id: chatId, message_id: query.message!.message_id }
-                );
             });
             
             // Handle image uploads
@@ -306,19 +300,6 @@
 
                 } else if (query.data === 'cancel_points') {
                     await bot.sendMessage(chatId, 'Points assignment cancelled.');
-                }
-
-                // Remove the inline keyboard
-                try {
-                    await bot.editMessageReplyMarkup(
-                        { inline_keyboard: [] },
-                        {
-                            chat_id: chatId,
-                            message_id: query.message!.message_id
-                        }
-                    );
-                } catch (error) {
-                    console.error('Error removing keyboard:', error);
                 }
             });
         };

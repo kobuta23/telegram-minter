@@ -20,7 +20,7 @@ export const givePointsToNFTHolders = async (tokenId: number, points: number) =>
       tokenId
         }
     });
-    return `Event integration created successfully, ${tokenId} points given to tokenId ${tokenId}`;
+    return `Event integration created successfully, ${points} points given to tokenId ${tokenId}`;
 
   } catch (error) {
     console.error(error);

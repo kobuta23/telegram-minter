@@ -2,25 +2,32 @@ import { bot } from '../clients/telegram';
 import { userTokenMap } from '../storage/userTokens';
 import { CONTRACT_ADDRESS } from '../config/environment';
 import { publicClient, walletClient, ensClient } from '../clients/blockchain';
-import { isAddress } from 'viem';
 import { nftAbi, account, explorerLink } from '../clients/blockchain';
 import { AuditLogger } from '../utils/auditLogger';
 import { SecurityManager, Permission } from '../config/security';
 import { saveUser } from '../storage/users';
+
 export const initializeMintHandler = () => {
     
-    bot.onText(/\/mint (.+?) (\d+)?$/, async (msg, match) => {
+    bot.onText(/^\/mint\s+([^\s]+)(?:\s+(\d+))?$/, async (msg, match) => {
+        console.log("minting for user called", match);
         saveUser(msg);
         const chatId = msg.chat.id;
         const userId = msg.from!.id;
-
+        
         if (!SecurityManager.hasPermission(userId, Permission.MINT_ANY) || !SecurityManager.hasPermission(userId, Permission.MINT)) {
             await bot.sendMessage(chatId, 'You do not have permission to mint NFTs.');
             return;
         }
-
-        const recipient = match![1];
-        const specifiedTokenId = match![2] ? parseInt(match![2]) : null;
+        
+        if (!match) {
+            await bot.sendMessage(chatId, 'Invalid command format. Use: /mint <address or ENS> [tokenId]');
+            return;
+        }
+        
+        const recipient = match[1];
+        console.log("minting for user ", recipient);
+        const specifiedTokenId = match[2] ? parseInt(match[2]) : null;
         if (specifiedTokenId && !SecurityManager.hasPermission(userId, Permission.MINT_ANY)) {
             await bot.sendMessage(chatId, 'You do not have permission to mint a specific NFT.');
             return;
