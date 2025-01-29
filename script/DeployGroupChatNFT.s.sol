@@ -8,7 +8,7 @@ import {console} from "forge-std/console.sol";
 contract DeployGroupChatNFT is Script {
     function run() external returns (GroupChatNFT) {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        address derived = vm.addr(privateKey);
+        address derived = vm.addr(deployerPrivateKey);
         console.log("Foundry derived address:", derived);
 
         vm.startBroadcast(deployerPrivateKey);
