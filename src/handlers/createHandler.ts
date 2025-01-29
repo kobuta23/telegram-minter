@@ -10,6 +10,8 @@
         import { SecurityManager, Permission } from '../config/security';
         import { givePointsToNFTHolders } from '../clients/stack';
         import { saveUser } from '../storage/users';
+        import { uploadToIPFS } from '../utils/ipfs';
+
         export const initializeCreateHandler = () => {
         
             bot.onText(/\/create/, async (msg) => {
@@ -116,68 +118,23 @@
                     bot.sendMessage(msg.chat.id, 'Creating NFT...');
                     
                     try {
-                        // Create a readable stream from the buffer
-                        const imageStream = Readable.from(pending.image!);
-                        
-                        // Upload image to IPFS
-                        const formData = new FormData();
-                        formData.append('file', imageStream, {
-                            filename: `${pending.name}-image.jpg`,
-                            contentType: 'image/jpeg'
-                        });
-                        
-                        console.log('Uploading image to Pinata...'); // Debug log
-                        const imageResult = await axios.post(
-                            'https://api.pinata.cloud/pinning/pinFileToIPFS',
-                            formData,
-                            {
-                                headers: {
-                                    'Authorization': `Bearer ${PINATA_JWT}`,
-                                    ...formData.getHeaders() // Important: get headers from form-data
-                                },
-                                maxBodyLength: Infinity
-                            }
-                        );
+                        const imageIpfsUrl = await uploadToIPFS(pending.image!, { filename: `${pending.name}-image.jpg`, contentType: 'image/jpeg' });
                 
                         // Create and upload metadata
-                        const metadata = {
+                        const tokenMetadata = {
                             name: pending.name,
                             description: pending.description,
-                            image: `ipfs://${imageResult.data.IpfsHash}`
+                            image: imageIpfsUrl
                         };
-                
-                        const metadataFormData = new FormData();
-                        const metadataStream = Readable.from(Buffer.from(JSON.stringify(metadata)));
-                        metadataFormData.append('file', metadataStream, {
-                            filename: `${pending.name}-metadata.json`,
-                            contentType: 'application/json'
-                        });
-                
-                        console.log('Uploading metadata to Pinata...'); // Debug log
-                        const metadataResult = await axios.post(
-                            'https://api.pinata.cloud/pinning/pinFileToIPFS',
-                            metadataFormData,
-                            {
-                                headers: {
-                                    'Authorization': `Bearer ${PINATA_JWT}`,
-                                    ...metadataFormData.getHeaders() // Important: get headers from form-data
-                                },
-                                maxBodyLength: Infinity
-                            }
-                        );
-                        
-                        console.log("Uploaded metadata to Pinata");
-                        console.log("Creating token on contract");
-                        ipfsUrl = `ipfs://${metadataResult.data.IpfsHash}`;
-                        console.log("IPFS url: ", ipfsUrl);
-                        
+
+                        const metadataIpfsUrl = await uploadToIPFS(tokenMetadata, { filename: `${pending.name}-metadata.json`, contentType: 'application/json' });
                         // First simulate the transaction
                         const { request, result } = await publicClient.simulateContract({
                             address: CONTRACT_ADDRESS,
                             abi: nftAbi,
                             functionName: 'createToken',
                             account: account.address,
-                            args: [ipfsUrl],
+                            args: [metadataIpfsUrl],
                             value: 0n
                         });
                         
@@ -188,11 +145,11 @@
                         console.log('Transaction sent:', hash);
                 
                         // Wait for transaction to be mined
-                        const receipt = await publicClient.waitForTransactionReceipt({ hash });
-                        console.log('Transaction mined:', receipt.transactionHash);
+                        const transactionHash = (await publicClient.waitForTransactionReceipt({ hash })).transactionHash;
+                        console.log('Transaction mined:', transactionHash);
                         
                         // The token ID is returned directly from createToken function
-                        const tokenId = result;
+                        const tokenId = Number(result);
                         console.log('Token ID:', tokenId);
                 
                         // Update user token mapping
@@ -206,13 +163,9 @@
                         await AuditLogger.logHelper(msg, {
                             action: 'create',
                             token: {
-                                tokenId: Number(tokenId),
-                                transactionHash: receipt.transactionHash,
-                                tokenMetadata: {
-                                    name: pending.name,
-                                    description: pending.description,
-                                    imageUrl: ipfsUrl
-                                }
+                                tokenId,
+                                transactionHash,
+                                tokenMetadata
                             }
                         });
                         
