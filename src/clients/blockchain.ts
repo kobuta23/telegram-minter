@@ -3,7 +3,7 @@ import { base, baseSepolia, mainnet } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 import { PRIVATE_KEY, TESTNET, RPC_URL, MAINNET_RPC_URL } from '../config/environment';
 // @ts-ignore
-import nftArtifact from '../../out/GroupChatNFT.sol/GroupChatNFT.json'; // this won't work unless you run `forge build`
+import nftArtifact from '../abi/GroupChatNFT.json'; // this won't work unless you run `forge build`
 
 export const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 export const nftAbi = nftArtifact.abi;
