@@ -1,4 +1,3 @@
-import { bot } from './clients/telegram';
 import { account } from './clients/blockchain';
 import { SecurityManager } from './config/security';
 import { initializeStartHandler } from './handlers/startHandler';
