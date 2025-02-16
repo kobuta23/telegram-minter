@@ -30,5 +30,7 @@ export const updateUserToken = (userId: number, tokenId: number) => {
 export const pendingNFTs = new Map<number, {
     image?: Buffer,
     name?: string,
-    description?: string
+    description?: string,
+    previewMessageId?: number,
+    instructionMessageId?: number
 }>(); 

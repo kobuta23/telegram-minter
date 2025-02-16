@@ -1,9 +1,11 @@
 import { bot } from '../clients/telegram';
 import { SecurityManager, Permission } from '../config/security';
 import { AuditLogger } from '../utils/auditLogger';
+import { Message } from 'node-telegram-bot-api';
+import { CallbackQuery } from 'node-telegram-bot-api';
 
 export const initializeLogsHandler = () => {
-    bot.onText(/\/logs/, async (msg) => {
+    bot.onText(/\/logs/, async (msg: Message) => {
         const chatId = msg.chat.id;
         const userId = msg.from!.id;
 
@@ -33,7 +35,7 @@ export const initializeLogsHandler = () => {
     });
 
     // Handle "Show More" button clicks
-    bot.on('callback_query', async (query) => {
+    bot.on('callback_query', async (query: CallbackQuery) => {
         if (!query.data?.startsWith('show_more_logs_')) return;
         
         const chatId = query.message!.chat.id;

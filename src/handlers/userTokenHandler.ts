@@ -4,9 +4,11 @@ import { publicClient } from '../clients/blockchain';
 import { CONTRACT_ADDRESS } from '../config/environment';
 import { nftAbi } from '../clients/blockchain';
 import { saveUser } from '../storage/users';
+import { Message } from 'node-telegram-bot-api';
+import { CallbackQuery } from 'node-telegram-bot-api';
 export const initializeTokenHandler = () => {
 
-    bot.onText(/\/token (\d+)/, async (msg, match) => {
+    bot.onText(/\/token (\d+)/, async (msg: Message, match: Array<string | number> | null) => {
         saveUser(msg);
 
         console.log("token handler, match:", match);
@@ -54,7 +56,7 @@ export const initializeTokenHandler = () => {
         }
     });
     
-    bot.onText(/\/token-minters/, async (msg) => {
+    bot.onText(/\/token-minters/, async (msg: Message) => {
         saveUser(msg);
         console.log("tokens handler, msg:", msg);
         try {
@@ -86,7 +88,7 @@ export const initializeTokenHandler = () => {
             bot.sendMessage(msg.chat.id, message, opts);
 
             // Handle callback for seeing all tokens
-            bot.on('callback_query', async (callbackQuery) => {
+            bot.on('callback_query', async (callbackQuery: CallbackQuery) => {
                 if (callbackQuery.data === 'see_all_tokens') {
                     let allTokensMessage = "🌟 All Existing Tokens:\n\n";
                     let tokenId = 1n;

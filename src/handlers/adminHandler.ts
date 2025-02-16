@@ -2,9 +2,11 @@ import { bot } from '../clients/telegram';
 import { SecurityManager, Permission } from '../config/security';
 import { AuditLogger } from '../utils/auditLogger';
 import { getUserByUsername } from '../storage/users';
+import { Message } from 'node-telegram-bot-api';
+
 export const initializeAdminHandler = () => {
     // Help command for admins
-    bot.onText(/\/adminhelp/, async (msg) => {
+    bot.onText(/\/adminhelp/, async (msg: Message) => {
         const userId = msg.from!.id;
         
         if (!SecurityManager.hasPermission(userId, Permission.ADMIN)) {
@@ -36,7 +38,7 @@ Example:
         await bot.sendMessage(msg.chat.id, helpText);
     });
     // Add admin command
-    bot.onText(/\/addadmin (@\w+)/, async (msg, match) => {
+    bot.onText(/\/addadmin (@\w+)/, async (msg: Message, match: Array<string | number> | null) => {
         const userId = msg.from!.id;
         console.log(match);
         const targetHandle = match![1];
@@ -48,7 +50,7 @@ Example:
 
         try {
             console.log('fetching ID of: ', targetHandle);
-            const chatMember = getUserByUsername(targetHandle);
+            const chatMember = getUserByUsername(targetHandle as string);
             if (!chatMember?.id) {
                 await bot.sendMessage(msg.chat.id, `Failed to find user. Say /hello ${targetHandle}`);
                 return;
@@ -71,7 +73,7 @@ Example:
     });
 
     // Remove admin command
-    bot.onText(/\/removeadmin (@\w+)/, async (msg, match) => {
+    bot.onText(/\/removeadmin (@\w+)/, async (msg: Message, match: Array<string | number> | null) => {
         const userId = msg.from!.id;
         const targetHandle = match![1];
         
@@ -81,7 +83,7 @@ Example:
         }
 
         try {
-            const chatMember = getUserByUsername(targetHandle);
+            const chatMember = getUserByUsername(targetHandle as string);
             if (!chatMember?.id) {
                 await bot.sendMessage(msg.chat.id, `Failed to find user. Say /hello ${targetHandle}`);
                 return;
@@ -103,7 +105,7 @@ Example:
     });
 
     // Grant role command
-    bot.onText(/\/grantrole (@\w+) (\w+)/, async (msg, match) => {
+    bot.onText(/\/grantrole (@\w+) (\w+)/, async (msg: Message, match: Array<string | number> | null) => {
         const userId = msg.from!.id;
         const targetHandle = match![1];
         const role = match![2] as Permission;
@@ -119,7 +121,7 @@ Example:
         }
 
         try {
-            const chatMember = getUserByUsername(targetHandle);
+            const chatMember = getUserByUsername(targetHandle as string);
             if (!chatMember?.id) {
                 await bot.sendMessage(msg.chat.id, `Failed to find user. Say /hello ${targetHandle}`);
                 return;
@@ -142,7 +144,7 @@ Example:
     });
 
     // List roles command
-    bot.onText(/\/listroles (@\w+)/, async (msg, match) => {
+    bot.onText(/\/listroles (@\w+)/, async (msg: Message, match: Array<string | number> | null) => {
         const userId = msg.from!.id;
         const targetHandle = match![1];
         
@@ -152,7 +154,7 @@ Example:
         }
 
         try {
-            const chatMember = getUserByUsername(targetHandle);
+            const chatMember = getUserByUsername(targetHandle as string);
             if (!chatMember?.id) {
                 await bot.sendMessage(msg.chat.id, `Failed to find user. Say /hello ${targetHandle}`);
                 return;
