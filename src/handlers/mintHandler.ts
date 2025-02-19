@@ -10,6 +10,13 @@ import { Message } from 'node-telegram-bot-api';
 import { CallbackQuery } from 'node-telegram-bot-api';
 
 export const initializeMintHandler = () => {
+
+    const pendingMintRequests = new Map<string, {
+        from: string; // telegram id of the user who initiated the request
+        to: `0x${string}`; // address of the user who is receiving the NFT
+        recipient: string; // ENS name or address of the user who is receiving the NFT
+        tokenId: number;
+    }>();
     
     bot.onText(/^\/mint\s+([^\s]+)(?:\s+(\d+))?$/, async (msg: Message, match: Array<string | number> | null) => {
         console.log("minting for user called", match);
@@ -28,6 +35,8 @@ export const initializeMintHandler = () => {
         }
         
         const recipient = match[1];
+        let address = '0x0' as `0x${string}`;
+
         console.log("minting for user ", recipient);
         const specifiedTokenId = match[2] ? parseInt(match[2].toString()) : null;
         if (specifiedTokenId && !SecurityManager.hasPermission(userId, Permission.MINT_ANY)) {
@@ -42,7 +51,6 @@ export const initializeMintHandler = () => {
             return;
         }
         
-        let address = '0x0' as `0x${string}`;
         if (recipient.toString().endsWith('.eth')) {
             console.log("recipient has an ens-looking name")
             try {
@@ -52,6 +60,7 @@ export const initializeMintHandler = () => {
                     bot.sendMessage(msg.chat.id, `Could not resolve ENS name ${recipient}`);
                     return;
                 }
+                console.log("ens address found: ", address);
             } catch (error) {
                 console.log('Error getting ENS address', error);
                 bot.sendMessage(msg.chat.id, `Error resolving ENS name ${recipient}`);
@@ -89,18 +98,30 @@ export const initializeMintHandler = () => {
                 replyToMessageId: msg.message_id
             });
             // Create confirmation message with NFT details
-            const confirmMessage = `Mint NFT #${tokenId} to *${recipient}*?`;
+            const confirmMessage = 
+                `Mint NFT #${tokenId} to *${recipient !== address 
+                                            ? (recipient + ` (${address})`) 
+                                            : recipient}*?`;
 
+            // generate a random id for the request
+            const requestId = Math.random().toString(36).substring(2, 15);
+            const buttonData = `confirm_mint_${userId}_${requestId}`;
+            pendingMintRequests.set(requestId, {
+                from: userId.toString(),
+                to: address,
+                recipient: recipient.toString(),
+                tokenId: tokenId
+            });
+            console.log("button data: ", buttonData);
             const opts = {
                 reply_markup: {
                     inline_keyboard: [[
-                        { text: '✅ Confirm', callback_data: `confirm_mint_${userId}_${tokenId}_${address}` },
+                        { text: '✅ Confirm', callback_data: buttonData },
                         { text: '❌ Cancel', callback_data: `cancel_mint_${userId}` }
                     ]],
                     selective: true
                 },
-                parse_mode: 'Markdown' as const,
-                reply_to_message_id: msg.message_id
+                parse_mode: 'Markdown' as const
             };
             // Send confirmation message
             await bot.sendMessage(chatId, confirmMessage, opts);
@@ -113,41 +134,50 @@ export const initializeMintHandler = () => {
 
     // Handle mint confirmation
     bot.on('callback_query', async (query: CallbackQuery) => {
-        const [action, type, targetUserId, ...params] = (query.data || '').split('_');
+        const [action, type, senderId, requestId] = (query.data || '').split('_');
         const userId = query.from.id;
         const chatId = query.message!.chat.id;
 
         // Verify the user is the one who initiated the action
-        if (userId.toString() !== targetUserId) {
+        if (userId.toString() !== senderId) {
             bot.answerCallbackQuery(query.id, {
                 text: 'This action is not for you',
                 show_alert: true
             });
             return;
         }
-
+        
         if (type === 'mint') {
             if (action === 'confirm') {
-                const [tokenId, recipient] = params;
+                const request = pendingMintRequests.get(requestId);
+                if (!request) {
+                    await bot.sendMessage(chatId, 'No mint request found.');
+                    return;
+                }
+                const { to, recipient, tokenId } = request;
                 
+                const loadingMessage = await bot.sendMessage(chatId, `Minting NFT ${tokenId} to ${recipient}...`);
                 try {
                     const { request } = await publicClient.simulateContract({
                         address: CONTRACT_ADDRESS,
                         abi: nftAbi,
                         functionName: 'mint',
                         account: account.address,
-                        args: [recipient as `0x${string}`, BigInt(tokenId), 1n]
+                        args: [to as `0x${string}`, BigInt(tokenId), 1n]
                     });
                     
                     const hash = await walletClient.writeContract({...request, account});
-                    await bot.sendMessage(chatId, `Minting NFT ${tokenId} to ${recipient}! Transaction: ${explorerLink(hash)}`);
+                    await bot.editMessageText(`Minted NFT ${tokenId} to ${recipient}! Transaction hash: ${hash}`, { //TODO: add link to explorer
+                        chat_id: chatId,
+                        message_id: loadingMessage.message_id
+                    });
 
                     // Log the mint
                     await AuditLogger.logHelper(query.message, {
                         action: 'mint',
                         token: {
                             tokenId: Number(tokenId),
-                            recipientAddress: recipient,
+                            recipientAddress: to,
                             transactionHash: hash
                         }
                     });

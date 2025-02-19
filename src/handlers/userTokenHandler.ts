@@ -97,7 +97,7 @@ export const initializeTokenHandler = () => {
                         console.log("tokenId:", tokenId);
                         try {
                             // Try to get token URI for current ID
-                            const tokenUri = await publicClient.readContract({
+                            await publicClient.readContract({
                                 address: CONTRACT_ADDRESS,
                                 abi: nftAbi,
                                 functionName: 'uri',
