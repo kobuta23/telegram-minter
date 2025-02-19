@@ -1,5 +1,5 @@
 {
-  "name": "group-chat-nft-bot",
+  "name": "nft-minter",
   "version": "1.0.0",
   "description": "Telegram bot for minting NFTs from group chats",
   "main": "dist/index.js",
