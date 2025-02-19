@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http } from 'viem';
+import { createPublicClient, createWalletClient, http, type WalletClient } from 'viem';
 import { base, baseSepolia, mainnet } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 import { PRIVATE_KEY, TESTNET, RPC_URL, MAINNET_RPC_URL } from '../config/environment';
@@ -26,7 +26,7 @@ export const walletClient = createWalletClient({
     account,
     chain: TESTNET? baseSepolia : base,
     transport: httpRpc
-}); 
+}) as WalletClient; 
 
 export const explorerLink = (hash: string) => {
     return `https://${TESTNET? 'sepolia.' : ''}basescan.org/tx/${hash}`;
