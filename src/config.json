@@ -1,37 +1,8 @@
 {
   "admins": [
-    475212779,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null
+    475212779
   ],
   "whitelistedGroups": [],
   "whitelistedUsers": [],
-  "lastUpdated": "2025-02-16T09:36:11.769Z"
+  "lastUpdated": "2025-16T09:36:11.769Z"
 }

@@ -40,6 +40,10 @@ export const getUser = (userId: number): User | undefined => {
     return userMap[userId];
 };
 
+export const getUsers = (userIds: number[]): Array<User | undefined> => {
+    return userIds.map(id => getUser(id));
+}
+
 export const getAllUsers = (): User[] => {
     return Object.values(userMap);
 };

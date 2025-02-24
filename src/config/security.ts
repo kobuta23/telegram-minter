@@ -99,6 +99,10 @@ export class SecurityManager {
         return this.config.admins.includes(userId);
     }
 
+    static adminList(): Array<number> {
+        return this.config.admins; 
+    }
+
     static isWhitelisted(userId: number, chatId: number): boolean {
         return (
             this.isAdmin(userId) ||

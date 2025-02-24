@@ -1,10 +1,35 @@
 import { bot } from '../clients/telegram';
 import { SecurityManager, Permission } from '../config/security';
 import { AuditLogger } from '../utils/auditLogger';
-import { getUserByUsername } from '../storage/users';
+import { getUserByUsername, getUsers } from '../storage/users';
 import { Message } from 'node-telegram-bot-api';
+import { CONTRACT_ADDRESS, TESTNET } from '../config/environment';
 
 export const initializeAdminHandler = () => {
+    bot.onText(/\/admin/, async (msg: Message) => {
+        // if there are no admins, make the user admin
+        // if there are admins, but the user isn't one, return msg
+        // if user is admin, then return a list of admins
+        const userId = msg.from!.id;
+        const adminList = SecurityManager.adminList(); 
+        let message = "You are not allowed to call this function";
+        if(adminList.includes(userId)) {
+            const users = getUsers(adminList);
+            message =  `Current admins are: ${users.map(u=>u?.username).join(", ")}`;
+        } else if(adminList.length == 0){
+            SecurityManager.addAdmin(userId);
+            message = "You are now admin";
+        }
+        bot.sendMessage(msg.chat.id, message) 
+    });
+
+    bot.onText(/\/contract/, async (msg: Message) => {
+        // return the network and contract address
+        const contractLink = `https://${TESTNET ? "sepolia." : ""}basescan.org/address/${CONTRACT_ADDRESS}`;
+        bot.sendMessage(msg.chat.id, 
+            `bot currently running against ${contractLink}o`)
+    })
+
     // Help command for admins
     bot.onText(/\/adminhelp/, async (msg: Message) => {
         const userId = msg.from!.id;
@@ -52,7 +77,7 @@ Example:
             console.log('fetching ID of: ', targetHandle);
             const chatMember = getUserByUsername(targetHandle as string);
             if (!chatMember?.id) {
-                await bot.sendMessage(msg.chat.id, `Failed to find user. Say /hello ${targetHandle}`);
+                await bot.sendMessage(msg.chat.id, `Failed to find user. User must say /hello`);
                 return;
             }
             console.log('ID of: ', chatMember?.id);
@@ -85,7 +110,7 @@ Example:
         try {
             const chatMember = getUserByUsername(targetHandle as string);
             if (!chatMember?.id) {
-                await bot.sendMessage(msg.chat.id, `Failed to find user. Say /hello ${targetHandle}`);
+                await bot.sendMessage(msg.chat.id, `Failed to find user. User must say /hello`);
                 return;
             }
             await SecurityManager.removeAdmin(chatMember?.id);
@@ -123,7 +148,7 @@ Example:
         try {
             const chatMember = getUserByUsername(targetHandle as string);
             if (!chatMember?.id) {
-                await bot.sendMessage(msg.chat.id, `Failed to find user. Say /hello ${targetHandle}`);
+                await bot.sendMessage(msg.chat.id, `Failed to find user. User must say /hello`);
                 return;
             }
             await SecurityManager.whitelistUserWithPermissions(chatMember.id, [role]);
@@ -156,7 +181,7 @@ Example:
         try {
             const chatMember = getUserByUsername(targetHandle as string);
             if (!chatMember?.id) {
-                await bot.sendMessage(msg.chat.id, `Failed to find user. Say /hello ${targetHandle}`);
+                await bot.sendMessage(msg.chat.id, `Failed to find user. User must say /hello`);
                 return;
             }
             const roles = await SecurityManager.getPermissions(chatMember.id);
