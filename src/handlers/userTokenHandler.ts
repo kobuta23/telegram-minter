@@ -133,6 +133,11 @@ export const initializeTokenHandler = () => {
         console.log("mytoken handler, match:", match);
         if (!match) return;
 
+        // check if the user has a token in their userTokenMap
+        if (userTokenMap[msg.from!.id]) {
+            bot.sendMessage(msg.chat.id, `Token #${userTokenMap[msg.from!.id]} is your current default token.`);
+        }
+
         const tokenId = Number(match[1]);
         // add tokenid to userTokenMap
         userTokenMap[msg.from!.id] = tokenId;
