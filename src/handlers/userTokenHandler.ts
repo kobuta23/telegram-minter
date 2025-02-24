@@ -6,7 +6,7 @@ import { nftAbi } from '../clients/blockchain';
 import { saveUser } from '../storage/users';
 import { Message } from 'node-telegram-bot-api';
 import { CallbackQuery } from 'node-telegram-bot-api';
-export const initializeTokenHandler = () => {
+export const initializeUserTokenHandler = () => {
 
     bot.onText(/\/token (\d+)/, async (msg: Message, match: Array<string | number> | null) => {
         saveUser(msg);

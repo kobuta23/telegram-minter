@@ -6,6 +6,7 @@ import { initializeMintHandler } from './handlers/mintHandler';
 import { initializeLogsHandler } from './handlers/logsHandler';
 import { initializeTokensHandler } from './handlers/tokensHandler';
 import { initializeAdminHandler } from './handlers/adminHandler';
+import { initializeUserTokenHandler } from './handlers/userTokenHandler';
 import { ADMIN_ID } from './config/environment';
 
 async function main() {
@@ -21,6 +22,7 @@ async function main() {
     initializeLogsHandler();
     initializeTokensHandler();
     initializeAdminHandler();
+    initializeUserTokenHandler();
 
     // add admin to the bot
     SecurityManager.addAdmin(ADMIN_ID);
