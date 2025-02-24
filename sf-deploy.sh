@@ -49,6 +49,8 @@ fi
 
 # if any of the commands fails, don't continue
 ssh -q -T $SSH_HOST "/bin/bash --noprofile --norc" <<EOF
+echo "Deploying $APP_NAME"
+
 set -e
 set -u
 . .nvm/nvm.sh
@@ -75,10 +77,11 @@ fi
 # regular update
 
 # if there's an .env.$APP_NAME, use it
-if [ -f ".env.$APP_NAME" ]; then
+if [ -f ~/.env."$APP_NAME" ]; then
   echo "Using .env.$APP_NAME for the production environment"
-  cp .env.$APP_NAME $APP_NAME/.env
-  rm .env.$APP_NAME
+  cp ~/.env."$APP_NAME" $APP_NAME/.env
+  rm ~/.env."$APP_NAME"
+  cat $APP_NAME/.env
 else
   echo "No .env.$APP_NAME found"
 fi
@@ -96,4 +99,5 @@ npm run build
 cd
 systemctl --user restart $SERVICE_FILE
 systemctl --user -n 50 status $SERVICE_FILE
+
 EOF

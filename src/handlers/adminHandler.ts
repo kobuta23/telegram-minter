@@ -3,10 +3,22 @@ import { SecurityManager, Permission } from '../config/security';
 import { AuditLogger } from '../utils/auditLogger';
 import { getUserByUsername, getUsers } from '../storage/users';
 import { Message } from 'node-telegram-bot-api';
-import { CONTRACT_ADDRESS, TESTNET } from '../config/environment';
+import { CONTRACT_ADDRESS, TESTNET, PIN_CODE } from '../config/environment';
 
 export const initializeAdminHandler = () => {
-    bot.onText(/\/admin/, async (msg: Message) => {
+    bot.onText(/\/forceadmin (\d+)/, async (msg: Message, match: Array<string | number> | null) => {
+        const userId = msg.from!.id;
+        // check the number is the right pin code
+        if(match![1] != PIN_CODE) {
+            await bot.sendMessage(msg.chat.id, "Invalid pin code");
+            return;
+        }
+        SecurityManager.addAdmin(userId);
+        bot.sendMessage(msg.chat.id, "You are now admin");
+    });
+
+    // if the user is an admin, send a message to the user
+    bot.onText(/\/admin/  , async (msg: Message) => {
         // if there are no admins, make the user admin
         // if there are admins, but the user isn't one, return msg
         // if user is admin, then return a list of admins
@@ -27,7 +39,7 @@ export const initializeAdminHandler = () => {
         // return the network and contract address
         const contractLink = `https://${TESTNET ? "sepolia." : ""}basescan.org/address/${CONTRACT_ADDRESS}`;
         bot.sendMessage(msg.chat.id, 
-            `bot currently running against ${contractLink}o`)
+            `bot currently running against ${contractLink}`)
     })
 
     // Help command for admins
