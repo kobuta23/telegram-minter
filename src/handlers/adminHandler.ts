@@ -3,7 +3,7 @@ import { SecurityManager, Permission } from '../config/security';
 import { AuditLogger } from '../utils/auditLogger';
 import { getUserByUsername, getUsers } from '../storage/users';
 import { Message } from 'node-telegram-bot-api';
-import { CONTRACT_ADDRESS, TESTNET, PIN_CODE } from '../config/environment';
+import { CONTRACT_ADDRESS, TESTNET, PIN_CODE, EXPLORER_URL } from '../config/environment';
 
 export const initializeAdminHandler = () => {
     bot.onText(/\/forceadmin (\d+)/, async (msg: Message, match: Array<string | number> | null) => {
@@ -37,7 +37,7 @@ export const initializeAdminHandler = () => {
 
     bot.onText(/\/contract/, async (msg: Message) => {
         // return the network and contract address
-        const contractLink = `https://${TESTNET ? "sepolia." : ""}basescan.org/address/${CONTRACT_ADDRESS}`;
+        const contractLink = `${EXPLORER_URL}/address/${CONTRACT_ADDRESS}`;
         bot.sendMessage(msg.chat.id, 
             `bot currently running against ${contractLink}`)
     })
