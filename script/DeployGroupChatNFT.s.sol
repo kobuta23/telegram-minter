@@ -21,14 +21,3 @@ contract DeployGroupChatNFT is Script {
         return nft;
     }
 } 
-
-contract GiveMinterRole is Script {
-    function run(address user) external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        GroupChatNFT nft = GroupChatNFT(vm.envAddress("CONTRACT_ADDRESS"));
-        console.log("owner: ", nft.hasRole(nft.DEFAULT_ADMIN_ROLE(), vm.addr(deployerPrivateKey)));
-        vm.startBroadcast(deployerPrivateKey);
-        nft.grantRole(nft.MINTER_ROLE(), user);
-        vm.stopBroadcast();
-    }
-}
