@@ -127,4 +127,15 @@ export const initializeTokenHandler = () => {
             bot.sendMessage(msg.chat.id, 'Sorry, there was an error listing the tokens. Please try again.');
         }
     });
+
+    bot.onText(/\/mytoken (\d+)/, async (msg: Message, match: Array<string | number> | null) => {
+        saveUser(msg);
+        console.log("mytoken handler, match:", match);
+        if (!match) return;
+
+        const tokenId = Number(match[1]);
+        // add tokenid to userTokenMap
+        userTokenMap[msg.from!.id] = tokenId;
+        bot.sendMessage(msg.chat.id, `Token #${tokenId} is now your default token.`);
+    });
 };
