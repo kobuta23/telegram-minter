@@ -129,6 +129,8 @@ export const initializeTokenHandler = () => {
     });
 
     bot.onText(/\/mytoken (\d+)/, async (msg: Message, match: Array<string | number> | null) => {
+        bot.sendMessage(msg.chat.id, `Setting token #${match![1]} as your default token.`);
+
         saveUser(msg);
         console.log("mytoken handler, match:", match);
         if (!match) return;
