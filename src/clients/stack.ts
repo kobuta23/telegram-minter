@@ -24,7 +24,7 @@ export const givePointsToNFTHolders = async (tokenId: number, points: number) =>
 
   } catch (error) {
     console.error(error);
-    return "Error creating event integration, try again later";
+    return "Error creating event integration, try again later... " + error;
   }
 
 };
