@@ -9,15 +9,14 @@ const stack = new StackClient({
 });
 
 export const givePointsToNFTHolders = async (tokenId: number, points: number) => {
-
     try {
         await stack.createEventIntegration({
         type: EventIntegrationType.NFT_HOLDER,
         args: {
-      nftContractAddress: CONTRACT_ADDRESS,
-      chainId: TESTNET ? baseSepolia.id : base.id,
-      points,
-      tokenId
+          nftContractAddress: CONTRACT_ADDRESS,
+          chainId: TESTNET ? baseSepolia.id : base.id,
+          points,
+          tokenId
         }
     });
     return `Event integration created successfully, ${points} points given to tokenId ${tokenId}`;
